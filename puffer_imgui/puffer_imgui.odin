@@ -57,18 +57,21 @@ button_standalone :: proc(pos_x, pos_y, width, height : int) -> bool
 {
     gl.BindVertexArray(button_vao)
 
-    top_left_x, top_left_y          := xy_to_clipspace(auto_cast pos_x,             auto_cast pos_y,            auto_cast current_buffer_width, auto_cast current_buffer_height)
-    top_right_x, top_right_y        := xy_to_clipspace(auto_cast (pos_x + width),   auto_cast pos_y,            auto_cast current_buffer_width, auto_cast current_buffer_height)
-    bottom_left_x, bottom_left_y    := xy_to_clipspace(auto_cast pos_x,             auto_cast (pos_y + height), auto_cast current_buffer_width, auto_cast current_buffer_height)
-    bottom_right_x, bottom_right_y  := xy_to_clipspace(auto_cast (pos_x + width),   auto_cast (pos_y + height), auto_cast current_buffer_width, auto_cast current_buffer_height)
+    ref_size : Size = {auto_cast current_buffer_width, auto_cast current_buffer_height}
+    
+
+    top_left    := xy_to_clipspace({auto_cast pos_x,             auto_cast pos_y},            ref_size)
+    top_right   := xy_to_clipspace({auto_cast (pos_x + width),   auto_cast pos_y},            ref_size)
+    bottom_left := xy_to_clipspace({auto_cast pos_x,             auto_cast (pos_y + height)}, ref_size)
+    bottom_right:= xy_to_clipspace({auto_cast (pos_x + width),   auto_cast (pos_y + height)}, ref_size)
 
     vertices : [2 * 6] f32 = {
-        bottom_left_x,      bottom_left_y, 
-        top_left_x,         top_left_y,
-        top_right_x,        top_right_y,
-        top_right_x,        top_right_y,
-        bottom_right_x,     bottom_right_y,
-        bottom_left_x,      bottom_left_y
+        bottom_left.x,      bottom_left.y, 
+        top_left.x,         top_left.y,
+        top_right.x,        top_right.y,
+        top_right.x,        top_right.y,
+        bottom_right.x,     bottom_right.y,
+        bottom_left.x,      bottom_left.y
     }
 
     gl.BufferSubData(gl.ARRAY_BUFFER,               
@@ -80,12 +83,11 @@ button_standalone :: proc(pos_x, pos_y, width, height : int) -> bool
 
     hit_button : bool = false
 
-    if true == is_within_bounds(auto_cast current_mouse_pos_x, 
-                                auto_cast current_mouse_pos_y,
-                                auto_cast pos_x,
-                                auto_cast pos_y,
-                                auto_cast width,
-                                auto_cast height)
+    bounds : Rect     = {auto_cast pos_x, auto_cast pos_y, auto_cast width, auto_cast height}
+    mouse_pos : Point = {auto_cast current_mouse_pos_x, auto_cast current_mouse_pos_y}
+
+
+    if true == is_within_bounds(mouse_pos, bounds)
     {
         color_ptr := [4]f32{0.75, 0.15, 0.45, 1.0}
         update_color(button_shader, "backg_color", color_ptr)
